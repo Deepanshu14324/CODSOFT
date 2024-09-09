@@ -1,64 +1,65 @@
 # <------------------------------------To-do list ---------------------------------->
 
-class ToDoList:
-    def __init__(self):
+import tkinter as tk
+from tkinter import simpledialog, messagebox
+
+class TodoApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title('To-Do List')
+        
         self.tasks = []
 
-    def add_task(self, task):
-        self.tasks.append(task)
-        print(f'Added task: "{task}"')
+        self.task_entry = tk.Entry(root, width=50)
+        self.task_entry.pack(pady=10)
 
-    def remove_task(self, task_number):
-        if 0 < task_number <= len(self.tasks):
-            removed_task = self.tasks.pop(task_number - 1)
-            print(f'Removed task: "{removed_task}"')
+        self.add_button = tk.Button(root, text='Add Task', command=self.add_task)
+        self.add_button.pack(pady=5)
+
+        self.task_listbox = tk.Listbox(root, width=50, height=10)
+        self.task_listbox.pack(pady=10)
+        
+        self.delete_button = tk.Button(root, text='Delete Task', command=self.delete_task)
+        self.delete_button.pack(pady=5)
+        
+        self.edit_button = tk.Button(root, text='Edit Task', command=self.edit_task)
+        self.edit_button.pack(pady=5)
+
+    def add_task(self):
+        task = self.task_entry.get()
+        if task:
+            self.tasks.append(task)
+            self.update_listbox()
+            self.task_entry.delete(0, tk.END)
         else:
-            print("Invalid task number.")
+            messagebox.showwarning('Warning', 'Task cannot be empty')
 
-    def view_tasks(self):
-        if not self.tasks:
-            print("No tasks in your to-do list.")
+    def delete_task(self):
+        selected_idx = self.task_listbox.curselection()
+        if selected_idx:
+            task_index = selected_idx[0]
+            self.tasks.pop(task_index)
+            self.update_listbox()
         else:
-            print("\nTo-Do List:")
-            for i, task in enumerate(self.tasks, 1):
-                print(f"{i}. {task}")
+            messagebox.showwarning('Warning', 'Select a task to delete')
 
-    def clear_tasks(self):
-        self.tasks.clear()
-        print("Cleared all tasks.")
-
-def main():
-    todo_list = ToDoList()
-
-    while True:
-        print("\nMenu:")
-        print("1. Add a task")
-        print("2. Remove a task")
-        print("3. View all tasks")
-        print("4. Clear all tasks")
-        print("5. Exit")
-
-        choice = input("Choose an option: ")
-
-        if choice == "1":
-            task = input("Enter the task: ")
-            todo_list.add_task(task)
-        elif choice == "2":
-            todo_list.view_tasks()
-            try:
-                task_number = int(input("Enter the task number to remove: "))
-                todo_list.remove_task(task_number)
-            except ValueError:
-                print("Please enter a valid number.")
-        elif choice == "3":
-            todo_list.view_tasks()
-        elif choice == "4":
-            todo_list.clear_tasks()
-        elif choice == "5":
-            print("Exiting To-Do List. Goodbye!")
-            break
+    def edit_task(self):
+        selected_idx = self.task_listbox.curselection()
+        if selected_idx:
+            task_index = selected_idx[0]
+            new_task = simpledialog.askstring('Edit Task', 'Edit task:', initialvalue=self.tasks[task_index])
+            if new_task:
+                self.tasks[task_index] = new_task
+                self.update_listbox()
         else:
-            print("Invalid option. Please choose a valid number.")
+            messagebox.showwarning('Warning', 'Select a task to edit')
 
-if __name__ == "__main__":
-    main()
+    def update_listbox(self):
+        self.task_listbox.delete(0, tk.END)
+        for task in self.tasks:
+            self.task_listbox.insert(tk.END, task)
+
+root = tk.Tk()
+app = TodoApp(root)
+root.mainloop()
+
